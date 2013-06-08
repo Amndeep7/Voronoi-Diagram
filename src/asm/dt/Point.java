@@ -7,7 +7,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class Point implements Comparable<Point> {
+public class Point {
 	int x, y;
 
 	public Point(int xPos, int yPos) {
@@ -56,19 +56,40 @@ public class Point implements Comparable<Point> {
 			}
 		}
 	}
+	
+	public int compareTo(Point o, Comparator<Point> comparator){
+		return comparator.compare(this, o);
+	}
 
-	// default is horizontal sort
-	public int compareTo(Point o) {
-		if (o == null) {
-			throw new NullPointerException();
+	public static class SortHorizontallyThenVertically implements Comparator<Point> {
+		public int compare(Point a, Point b) {
+			if (a == null || b == null) {
+				throw new NullPointerException();
+			}
+
+			int xDifference = a.getX() - b.getX();
+
+			if (xDifference == 0) {
+				return -(a.getY() - b.getY());
+			} else {
+				return -xDifference;
+			}
 		}
+	}
 
-		int xDifference = o.getX() - this.getX();
+	public static class SortReverseHorizontallyThenVertically implements Comparator<Point> {
+		public int compare(Point a, Point b) {
+			if (a == null || b == null) {
+				throw new NullPointerException();
+			}
 
-		if (xDifference == 0) {
-			return -(o.getY() - this.getY());
-		} else {
-			return -xDifference;
+			int xDifference = a.getX() - b.getX();
+
+			if (xDifference == 0) {
+				return -(a.getY() - b.getY());
+			} else {
+				return xDifference;
+			}
 		}
 	}
 
@@ -106,13 +127,31 @@ public class Point implements Comparable<Point> {
 
 	public static void main(String[] args) {
 		List<Point> points = new ArrayList<Point>();
-		for (int x = 0; x < 5; x++) {
+		int numPoints = 5;
+		for (int x = 0; x < numPoints; x++) {
 			points.add(new Point((int) (Math.random() * 5), (int) (Math.random() * 5)));
 		}
+		System.out.print("Y\n|");
+		for (int y = 4; y >= 0; y--) {
+			for (int x = 0; x < 5; x++) {
+				if (points.contains(new Point(x, y))) {
+					System.out.print("#");
+				} else {
+					System.out.print("*");
+				}
+			}
+				System.out.print("\n|");
+		}
+		System.out.print("-----X\n");
+
 		System.out.println(points);
 		Collections.sort(points, new SortVerticallyThenHorizontally());
 		System.out.println(points);
 		Collections.sort(points, new SortVerticallyThenReverseHorizontally());
+		System.out.println(points);
+		Collections.sort(points, new SortHorizontallyThenVertically());
+		System.out.println(points);
+		Collections.sort(points, new SortReverseHorizontallyThenVertically());
 		System.out.println(points);
 	}
 }

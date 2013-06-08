@@ -11,9 +11,96 @@ import java.util.List;
 public class DelaunayTriangulation {
 
 	public static HashSet<Connection> triangulate(List<Point> points) {
-		Collections.sort(points);
+		Collections.sort(points, new Point.SortHorizontallyThenVertically());
 		return dt(points);
 	}
+	
+	private static void associate(Point a, Point b, HashSet<Connection> connections) {
+		connections.add(new Connection(a, b));
+	}
+
+	private static void associate(List<Point> points, HashSet<Connection> connections) {
+		for (Point p : points) {
+			for (Point pp : points) {
+				if (p != pp) {
+					associate(p, pp, connections);
+				}
+			}
+		}
+	}
+	
+	// within circumcircle identification code based off of an algorithm provided on Wikipedia: http://en.wikipedia.org/wiki/Delaunay_triangulation#Algorithms
+	public static boolean withinCircumcircle(Point baseLeft, Point baseRight, Point pc, Point npc) {
+
+		double det = (baseLeft.getX() - npc.getX())
+				* ((baseRight.getY() - npc.getY()) * (pc.getX() * pc.getX() - npc.getX() * npc.getX() + pc.getY() * pc.getY() - npc.getY() * npc.getY()) - (baseRight
+						.getX() * baseRight.getX() - npc.getX() * npc.getX() + baseRight.getY() * baseRight.getY() - npc.getY() * npc.getY())
+						* (pc.getY() - npc.getY()))
+				- (baseRight.getX() - npc.getX())
+				* ((baseLeft.getY() - npc.getY()) * (pc.getX() * pc.getX() - npc.getX() * npc.getX() + pc.getY() * pc.getY() - npc.getY() * npc.getY()) - (baseLeft
+						.getX() * baseLeft.getX() - npc.getX() * npc.getX() + baseLeft.getY() * baseLeft.getY() - npc.getY() * npc.getY())
+						* (pc.getY() - npc.getY()))
+				+ (pc.getX() - npc.getX())
+				* ((baseLeft.getY() - npc.getY())
+						* (baseRight.getX() * baseRight.getX() - npc.getX() * npc.getX() + baseRight.getY() * baseRight.getY() - npc.getY() * npc.getY()) - (baseLeft
+						.getX() * baseLeft.getX() - npc.getX() * npc.getX() + baseLeft.getY() * baseLeft.getY() - npc.getY() * npc.getY())
+						* (baseRight.getY() - npc.getY()));
+
+		if (det > 0) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 
 	private static HashSet<Connection> dt(List<Point> points) {
 		HashSet<Connection> connections = new HashSet<Connection>();
@@ -28,6 +115,9 @@ public class DelaunayTriangulation {
 
 			List<Point> left = points.subList(0, points.size() / 2 + points.size() % 2);
 			List<Point> right = points.subList(points.size() / 2 + points.size() % 2, points.size());
+
+			System.out.println("left is " + left);
+			System.out.println("right is " + right);
 
 			System.out.println("going left with size " + left.size());
 			HashSet<Connection> leftConnections = dt(left);
@@ -45,6 +135,7 @@ public class DelaunayTriangulation {
 		}
 
 		System.out.println("connections size when leaving dt " + connections.size());
+		System.out.println("connections: " + connections);
 		return connections;
 	}
 
@@ -181,63 +272,6 @@ public class DelaunayTriangulation {
 		return null;
 	}
 
-	// circumcircle identification code based off of Dave Watson and William Flis' responses from http://www.ics.uci.edu/~eppstein/junkyard/circumcenter.html
-	public static boolean withinCircumcircle(Point baseLeft, Point baseRight, Point pc, Point npc) {
-		double d = 2 * (baseLeft.getX() - pc.getX()) * (baseRight.getY() - pc.getY()) - (baseRight.getX() - pc.getX()) * (baseLeft.getY() - pc.getY());
-
-		double centerX = (((baseLeft.getX() - pc.getX()) * (baseLeft.getX() + pc.getX()) + (baseLeft.getY() - pc.getY()) * (baseLeft.getY() + pc.getY()))
-				* (baseRight.getY() - pc.getY()) - ((baseRight.getX() - pc.getX()) * (baseRight.getX() + pc.getX()) + (baseRight.getY() - pc.getY())
-				* (baseRight.getY() + pc.getY()))
-				* (baseLeft.getY() - pc.getY()))
-				/ d;
-
-		double centerY = (((baseRight.getX() - pc.getX()) * (baseRight.getX() + pc.getX()) + (baseRight.getY() - pc.getY()) * (baseRight.getY() + pc.getY()))
-				* (baseLeft.getX() - pc.getX()) - ((baseLeft.getX() - pc.getX()) * (baseLeft.getX() + pc.getX()) + (baseLeft.getY() - pc.getY())
-				* (baseLeft.getY() + pc.getY()))
-				* (baseRight.getX() - pc.getX()))
-				/ d;
-
-		double squaredRadius = (pc.getX() - centerX) * (pc.getX() - centerX) + (pc.getY() - centerY) * (pc.getY() - centerY);
-
-		if ((npc.getX() - centerX) * (npc.getX() - centerX) + (npc.getY() - centerY) * (npc.getY() - centerY) < squaredRadius)
-			return true;
-		else
-			return false;
-	}
-
-	private static class SortByLeastAngle implements Comparator<Point> {
-		public static Point baseLine;
-		public static Point vertix;
-
-		public static void setBaseLine(Point bl) {
-			baseLine = bl;
-		}
-
-		public static void setVertix(Point v) {
-			vertix = v;
-		}
-
-		public static double getAngle(Point p) {
-			Point newLine = new Point(p.getX() - vertix.getX(), p.getY() - vertix.getY());
-			double angle = Math.atan2(newLine.getY(), newLine.getX()) - Math.atan2(baseLine.getY(), baseLine.getX());
-			while (angle < 0) {
-				angle += 2 * Math.PI;
-			}
-			while (angle > 2 * Math.PI) {
-				angle -= 2 * Math.PI;
-			}
-			return angle;
-		}
-
-		public int compare(Point o1, Point o2) {
-			double angle1 = getAngle(o1);
-			double angle2 = getAngle(o2);
-
-			// margin of error of slightly less than a tenth of a degree
-			return angle1 > (angle2 + 0.0017) ? 1 : (angle1 + 0.0017) < angle2 ? -1 : 0;
-		}
-	}
-
 	private static Point[] createBaseLREdge(List<Point> left2, List<Point> right2, HashSet<Connection> leftConnections, HashSet<Connection> rightConnections,
 			HashSet<Connection> connections, Point baseLeft, Point baseRight) {
 		System.out.println("Making base edge");
@@ -311,17 +345,36 @@ public class DelaunayTriangulation {
 		}
 	}
 
-	private static void associate(Point a, Point b, HashSet<Connection> connections) {
-		connections.add(new Connection(a, b));
-	}
+	private static class SortByLeastAngle implements Comparator<Point> {
+		public static Point baseLine;
+		public static Point vertix;
 
-	private static void associate(List<Point> points, HashSet<Connection> connections) {
-		for (Point p : points) {
-			for (Point pp : points) {
-				if (p != pp) {
-					associate(p, pp, connections);
-				}
+		public static void setBaseLine(Point bl) {
+			baseLine = bl;
+		}
+
+		public static void setVertix(Point v) {
+			vertix = v;
+		}
+
+		public static double getAngle(Point p) {
+			Point newLine = new Point(p.getX() - vertix.getX(), p.getY() - vertix.getY());
+			double angle = Math.atan2(newLine.getY(), newLine.getX()) - Math.atan2(baseLine.getY(), baseLine.getX());
+			while (angle < 0) {
+				angle += 2 * Math.PI;
 			}
+			while (angle > 2 * Math.PI) {
+				angle -= 2 * Math.PI;
+			}
+			return angle;
+		}
+
+		public int compare(Point o1, Point o2) {
+			double angle1 = getAngle(o1);
+			double angle2 = getAngle(o2);
+
+			// margin of error of slightly less than a tenth of a degree
+			return angle1 > (angle2 + 0.0017) ? 1 : (angle1 + 0.0017) < angle2 ? -1 : 0;
 		}
 	}
 }

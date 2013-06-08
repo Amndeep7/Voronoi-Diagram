@@ -1,13 +1,15 @@
 package asm.dt;
 
+import java.awt.BasicStroke;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.util.Comparator;
 
 public class Connection {
 	Point a, b;
 
 	public Connection(Point one, Point two) {
-		if (one.compareTo(two) < 0) {
+		if (one.compareTo(two, new Point.SortHorizontallyThenVertically()) < 0) {
 			a = one;
 			b = two;
 		} else {
@@ -30,6 +32,7 @@ public class Connection {
 	}
 
 	public void draw(Graphics viewBuffer) {
+		((Graphics2D) viewBuffer).setStroke(new BasicStroke(3));
 		viewBuffer.drawLine(a.getX(), a.getY(), b.getX(), b.getY());
 	}
 
@@ -58,7 +61,7 @@ public class Connection {
 				throw new NullPointerException();
 			}
 
-			return a.getA().compareTo(b.getA());
+			return a.getA().compareTo(b.getA(), new Point.SortHorizontallyThenVertically());
 		}
 	}
 
@@ -68,7 +71,7 @@ public class Connection {
 				throw new NullPointerException();
 			}
 
-			return a.getB().compareTo(b.getB());
+			return a.getB().compareTo(b.getB(), new Point.SortHorizontallyThenVertically());
 		}
 	}
 }

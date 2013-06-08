@@ -88,20 +88,20 @@ public class Panel extends JPanel {
 	private class Mouse extends MouseInputAdapter {
 		public void mouseClicked(MouseEvent e) {
 			switch (e.getButton()) {
-				case 1: {// left click
-					points.add(new Point(e.getX(), e.getY()));
-					break;
+			case 1: {// left click
+				points.add(new Point(e.getX(), e.getY()));
+				break;
+			}
+			case 3: {// right click
+				if (points.size() > 0) {
+					points.remove(points.size() - 1);
 				}
-				case 3: {// right click
-					if (points.size() > 0) {
-						points.remove(points.size() - 1);
-					}
-					break;
-				}
-				default: {
-					// nothing cause something is seriously messed up if this case
-					// comes about
-				}
+				break;
+			}
+			default: {
+				// nothing cause something is seriously messed up if this case
+				// comes about
+			}
 			}
 		}
 	}
@@ -109,25 +109,26 @@ public class Panel extends JPanel {
 	private class Keyboard extends KeyAdapter {
 		public void keyTyped(KeyEvent e) {
 			switch (e.getKeyChar()) {
-				case 'f': {
-					for (int x = 0; x < 4; x++) {
-						points.add(new Point(random.nextInt(FRAMEX), random.nextInt(FRAMEY)));
-					}
-					break;
+			case 'f': {
+				for (int x = 0; x < 4; x++) {
+					points.add(new Point(random.nextInt(FRAMEX), random.nextInt(FRAMEY)));
 				}
-				case 'c': {
-					points.clear();
-					connections.clear();
-					break;
-				}
-				case 't': {
-					connections = DelaunayTriangulation.triangulate(points);
-					System.out.println(connections);
-					break;
-				}
-				default: {
-					break;
-				}
+				break;
+			}
+			case 'c': {
+				points.clear();
+				connections.clear();
+				System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+				break;
+			}
+			case 't': {
+				connections = DelaunayTriangulation.triangulate(points);
+				System.out.println(connections);
+				break;
+			}
+			default: {
+				break;
+			}
 			}
 		}
 	}

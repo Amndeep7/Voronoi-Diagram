@@ -20,7 +20,13 @@ public class Driver {
 		frame.pack();
 		frame.validate();
 		frame.setVisible(true);
-		frame.setSize(p.FRAMEX + frame.getInsets().left + frame.getInsets().right, p.FRAMEY + frame.getInsets().top + frame.getInsets().bottom);
+
+		String OS = System.getProperty("os.name");
+		if (OS.contains("Windows")) {
+			frame.setSize(p.FRAMEX + frame.getInsets().left + frame.getInsets().right, p.FRAMEY + frame.getInsets().top + frame.getInsets().bottom);
+		} else {// if OS.contains("Linux")
+			frame.setSize(p.FRAMEX, p.FRAMEY);
+		}
 		frame.setLocationRelativeTo(null);
 		p.requestFocusInWindow();
 	}
