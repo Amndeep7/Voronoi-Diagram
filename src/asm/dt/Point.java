@@ -56,8 +56,8 @@ public class Point {
 			}
 		}
 	}
-	
-	public int compareTo(Point o, Comparator<Point> comparator){
+
+	public int compareTo(Point o, Comparator<Point> comparator) {
 		return comparator.compare(this, o);
 	}
 
@@ -140,7 +140,7 @@ public class Point {
 					System.out.print("*");
 				}
 			}
-				System.out.print("\n|");
+			System.out.print("\n|");
 		}
 		System.out.print("-----X\n");
 

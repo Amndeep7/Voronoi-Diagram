@@ -1,6 +1,7 @@
 package asm.gui;
 
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -10,22 +11,19 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Random;
+import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 import javax.swing.event.MouseInputAdapter;
 
-import asm.dt.Connection;
 import asm.dt.DelaunayTriangulation;
 import asm.dt.Point;
+import asm.dt.Triangle;
 
 public class Panel extends JPanel {
 	private static final long serialVersionUID = 1187924516205302028L;
-
-	Random random = new Random();
 
 	public final int FRAMEX;
 	public final int FRAMEY;
@@ -36,7 +34,7 @@ public class Panel extends JPanel {
 	Graphics viewBuffer;
 
 	ArrayList<Point> points;
-	HashSet<Connection> connections;
+	HashMap<Triangle, ArrayList<Triangle>> triangles;
 
 	boolean transformation = false;
 
@@ -46,13 +44,16 @@ public class Panel extends JPanel {
 		FRAMEX = givenImage.getWidth();
 		FRAMEY = givenImage.getHeight();
 
+		System.out.println("FRAMEX = " + FRAMEX);
+		System.out.println("FRAMEY = " + FRAMEY);
+
 		myImage = new BufferedImage(FRAMEX, FRAMEY, BufferedImage.TYPE_INT_ARGB);
 
 		viewImage = new BufferedImage(FRAMEX, FRAMEY, BufferedImage.TYPE_INT_ARGB);
 		viewBuffer = viewImage.getGraphics();
 
 		points = new ArrayList<Point>();
-		connections = new HashSet<Connection>();
+		triangles = new HashMap<Triangle, ArrayList<Triangle>>();
 
 		addMouseListener(new Mouse());
 		addKeyListener(new Keyboard());
@@ -77,8 +78,8 @@ public class Panel extends JPanel {
 			for (Point p : points) {
 				p.draw(viewBuffer);
 			}
-			for (Connection c : connections) {
-				c.draw(viewBuffer);
+			for (Triangle t : triangles.keySet()) {
+				t.draw((Graphics2D) viewBuffer);
 			}
 		}
 
@@ -89,7 +90,8 @@ public class Panel extends JPanel {
 		public void mouseClicked(MouseEvent e) {
 			switch (e.getButton()) {
 			case 1: {// left click
-				points.add(new Point(e.getX(), e.getY()));
+				points.add(new Point(e.getX() == 0 ? e.getX() + 1 : e.getX() == FRAMEX - 1 ? e.getX() - 1 : e.getX(), e.getY() == 0 ? e.getY() + 1
+						: e.getY() == FRAMEX - 1 ? e.getY() - 1 : e.getY()));
 				break;
 			}
 			case 3: {// right click
@@ -107,23 +109,66 @@ public class Panel extends JPanel {
 	}
 
 	private class Keyboard extends KeyAdapter {
+		private int numAlreadySorted = 0;
+
 		public void keyTyped(KeyEvent e) {
 			switch (e.getKeyChar()) {
 			case 'f': {
-				for (int x = 0; x < 4; x++) {
-					points.add(new Point(random.nextInt(FRAMEX), random.nextInt(FRAMEY)));
+				Point upperLeft = new Point(0, 0);
+				Point upperRight = new Point(FRAMEX - 1, 0);
+				Point lowerLeft = new Point(0, FRAMEY - 1);
+				Point lowerRight = new Point(FRAMEX - 1, FRAMEY - 1);
+
+				Triangle one = new Triangle(upperLeft, upperRight, lowerLeft);
+				Triangle two = new Triangle(lowerLeft, lowerRight, upperRight);
+
+				points.add(upperLeft);
+				points.add(upperRight);
+				points.add(lowerLeft);
+				points.add(lowerRight);
+				triangles.put(one, new ArrayList<Triangle>());
+				triangles.put(two, new ArrayList<Triangle>());
+				triangles.get(one).add(two);
+				triangles.get(two).add(one);
+
+				numAlreadySorted = 4;
+				break;
+			}
+			case 'd': {
+
+				for (int x = 0; x < 1; x++) {
+					points.add(new Point((int) (Math.random() * (FRAMEX - 2) + 1), (int) (Math.random() * (FRAMEY - 2) + 1)));
+				}
+				break;
+			}
+			case 's': {
+
+				for (int x = 0; x < 5; x++) {
+					points.add(new Point((int) (Math.random() * (FRAMEX - 2) + 1), (int) (Math.random() * (FRAMEY - 2) + 1)));
+				}
+				break;
+			}
+			case 'a': {
+
+				for (int x = 0; x < 10; x++) {
+					points.add(new Point((int) (Math.random() * (FRAMEX - 2) + 1), (int) (Math.random() * (FRAMEY - 2) + 1)));
 				}
 				break;
 			}
 			case 'c': {
 				points.clear();
-				connections.clear();
+				triangles.clear();
 				System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
 				break;
 			}
 			case 't': {
-				connections = DelaunayTriangulation.triangulate(points);
-				System.out.println(connections);
+				try {
+					DelaunayTriangulation.triangulate(triangles, points.subList(numAlreadySorted, points.size()));
+					numAlreadySorted = points.size();
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
+				System.out.println(triangles);
 				break;
 			}
 			default: {
